@@ -1,13 +1,21 @@
 const express = require('express');
+const exphbs = require('express-handlebars');
 
 const app = express();
 
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
 // index route
 app.get('/', (req, res) => {
-	res.send('INDEX');
+	const title = "Wel come";
+
+	res.render('index', {
+		title
+	});
 });
 app.get('/about', (req, res) => {
-	res.send('ABOUT');
+	res.render('about');
 });
 
 
