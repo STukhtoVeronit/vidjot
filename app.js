@@ -1,10 +1,17 @@
 const express = require('express');
+const path = require('path');
 const exphbs = require('express-handlebars');
+const expSession = require('express-session');
+const flash = require('connect-flash');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const methodOverride = require ('method-override');
 
 const app = express();
+
+//Load routes
+const notes = require('./routes/notes');
+const users = require('./routes/users');
 
 //Map global promise
 // mongoose.Promise = global.Promise;
@@ -14,9 +21,7 @@ mongoose.connect('mongodb://localhost/noteted-dev',{ useNewUrlParser: true } )
 	.then(() => console.log('MongoDB connected'))
 	.catch(err => console.log(err));
 
-//Load ideas
-require('./models/note');
-const Notes = mongoose.model('notes');
+
 
 //Handlebars Middleware
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -26,9 +31,29 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Static Folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 //Method-parser middleware
 app.use(methodOverride('_method'));
 
+//Express Session middleware
+app.use(expSession({
+	secret: 'secret',
+	resave: true,
+	saveUninitialized: true
+}));
+
+// Flash middleware
+app.use(flash());
+
+// Global variables
+app.use((req, res, next) => {
+	res.locals.success_msg = req.flash('success_msg');
+	res.locals.error_msg = req.flash('error_msg');
+	res.locals.error = req.flash('error');
+	next();
+});
 // index route
 app.get('/', (req, res) => {
 	const title = "Welcome";
@@ -43,92 +68,10 @@ app.get('/about', (req, res) => {
 	res.render('about');
 });
 
-//Add notes form
-app.get('/notes/add', (req, res) => {
-	res.render('notes/add');
-});
+// Use routes
+app.use('/notes', notes);
+app.use('/users', users);
 
-//edit notes form
-app.get('/notes/edit/:id', (req, res) => {
-	Notes.findOne({
-		_id: req.params.id
-	})
-		.then(note => {
-			res.render('notes/edit', {
-				note
-			});
-
-		})
-		.catch(err => console.log(err));
-});
-
-//notes route
-app.get('/notes', (req, res) => {
-	Notes.find({})
-		.sort({date: 'desc'})
-		.then(notes => {
-			res.render('notes/index', {
-				notes
-			});
-		})
-		.catch(error => console.log(error));
-});
-
-//notes process form
-app.post('/notes', (req, res) => {
-
-	let errors = [];
-
-	if (!req.body.title){
-		errors.push({text: 'Please add a title'});
-	}
-	if (!req.body.details){
-		errors.push({text: 'Please add some details'});
-	}
-	if (errors.length){
-		res.render('notes/add', {
-			errors,
-			tittle: req.body.title,
-			details: req.body.details
-		});
-	} else {
-		const newNote = {
-			title: req.body.title,
-			details: req.body.details
-		};
-		const note = new Notes(newNote);
-		note.save()
-			.then(note => {
-				res.redirect('/notes');
-			})
-			.catch(err => console.log(err));
-	}
-});
-
-// Edit form process
-app.put('/notes/:id', (req, res) => {
-	Notes.findOne({
-		_id: req.params.id
-	})
-		.then(note => {
-			note.tittle = req.body.title;
-			note.details = req.body.details;
-
-			note.save()
-				.then(note => {
-					res.redirect('/notes');
-				})
-		})
-		.catch(err => console.log(err));
-});
-
-// Delete Note
-app.delete('/notes/:id', (req, res) => {
-	Notes.remove({_id: req.params.id})
-		.then(() => {
-			res.redirect('/ideas');
-		});
-});
 //server start
 const port = 3000;
 
