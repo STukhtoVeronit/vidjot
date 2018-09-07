@@ -1,0 +1,13 @@
+{{#each notes}}
+<div class="card card-body">
+    <h4>{{title}}</h4>
+    <p>{{details}}</p>
+    <a href="/notes/edit/{{id}}" class="btn btn-dark mb-2">Edit</a>
+    <form action="post" action="/notes/{{id}}?_method=DELETE">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" class="btn btn-danger btn-block" value="delete">
+    </form>
+</div>
+{{else}}
+    <p>No TED notes listed</p>
+{{/each}}
