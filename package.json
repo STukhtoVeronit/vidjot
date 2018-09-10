@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "start": "nodemon app"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",

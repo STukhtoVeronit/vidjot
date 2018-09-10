@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const methodOverride = require ('method-override');
 
 const {ensureAuthenticated} = require('./helpers/auth');
+const dbConf = require('./config/database');
 
 
 const app = express();
@@ -24,7 +25,7 @@ require('./config/passport')(passport);
 // mongoose.Promise = global.Promise;
 
 //Connect to mongoose
-mongoose.connect('mongodb://localhost/noteted-dev',{ useNewUrlParser: true } )
+mongoose.connect(dbConf.mongoURI,{ useNewUrlParser: true } )
 	.then(() => console.log('MongoDB connected'))
 	.catch(err => console.log(err));
 
@@ -86,7 +87,7 @@ app.use('/notes', notes);
 app.use('/users', users);
 
 //server start
-const port = 3000;
+const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
 	console.log(`Server started on ${port}`);
