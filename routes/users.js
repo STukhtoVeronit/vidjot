@@ -28,6 +28,7 @@ router.post('/login', (req, res, next) => {
 		failureRedirect: '/users/register',
 		failureFlash: true
 	})(req, res, next);
+
 });
 
 //User login route

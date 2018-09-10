@@ -9,10 +9,10 @@ module.exports = function (passport) {
 		usernameField: 'email'
 	}, (email, password, done) => {
 		Users.findOne({
-			email
+			email: email
 		}) .then( user => {
 			if (!user) {
-				return done(null, false, {message: 'No user found123'});
+				return done(null, false, {message: 'No user found'});
 			}
 
 			// Match password

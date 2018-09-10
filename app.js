@@ -82,7 +82,7 @@ app.get('/about', (req, res) => {
 });
 
 // Use routes
-app.use('/notes', ensureAuthenticated);
+// app.use('/notes', ensureAuthenticated);
 app.use('/notes', notes);
 app.use('/users', users);
 

@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const {ensureAuthenticated} = require('../helpers/auth');
 
 //Load Notes
 require('../models/Note');
 const Notes = mongoose.model('notes');
 
 //Add notes form
-router.get('/add', (req, res) => {
+router.get('/add',ensureAuthenticated, (req, res) => {
 	res.render('notes/add');
 });
 
@@ -34,7 +35,7 @@ router.get('/edit/:id', (req, res) => {
 });
 
 //notes route
-router.get('/', (req, res) => {
+router.get('/',ensureAuthenticated, (req, res) => {
 	Notes.find({user: req.user.id})
 		.sort({date: 'desc'})
 		.then(notes => {
@@ -46,7 +47,7 @@ router.get('/', (req, res) => {
 });
 
 //notes process form
-router.post('/', (req, res) => {
+router.post('/',ensureAuthenticated, (req, res) => {
 
 	let errors = [];
 
@@ -80,7 +81,7 @@ router.post('/', (req, res) => {
 });
 
 // Edit form process
-router.put('/:id', (req, res) => {
+router.put('/:id',ensureAuthenticated, (req, res) => {
 	Notes.findOne({
 			_id: req.params.id
 		})
@@ -97,7 +98,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete Note
-router.delete('/:id', (req, res) => {
+router.delete('/:id',ensureAuthenticated, (req, res) => {
 	Notes.deleteOne({_id: req.params.id})
 		.then(() => {
 			req.flash('success_msg', 'Ted note removed');
