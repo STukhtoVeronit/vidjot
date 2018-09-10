@@ -4,14 +4,21 @@ const exphbs = require('express-handlebars');
 const expSession = require('express-session');
 const flash = require('connect-flash');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 const mongoose = require('mongoose');
 const methodOverride = require ('method-override');
+
+const {ensureAuthenticated} = require('./helpers/auth');
+
 
 const app = express();
 
 //Load routes
 const notes = require('./routes/notes');
 const users = require('./routes/users');
+
+// Passports Config
+require('./config/passport')(passport);
 
 //Map global promise
 // mongoose.Promise = global.Promise;
@@ -44,6 +51,9 @@ app.use(expSession({
 	saveUninitialized: true
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Flash middleware
 app.use(flash());
 
@@ -52,8 +62,10 @@ app.use((req, res, next) => {
 	res.locals.success_msg = req.flash('success_msg');
 	res.locals.error_msg = req.flash('error_msg');
 	res.locals.error = req.flash('error');
+	res.locals.user = req.user || null;
 	next();
 });
+
 // index route
 app.get('/', (req, res) => {
 	const title = "Welcome";
@@ -69,6 +81,7 @@ app.get('/about', (req, res) => {
 });
 
 // Use routes
+app.use('/notes', ensureAuthenticated);
 app.use('/notes', notes);
 app.use('/users', users);
 

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
-
 //Load Notes
 require('../models/Note');
 const Notes = mongoose.model('notes');
@@ -18,18 +17,25 @@ router.get('/edit/:id', (req, res) => {
 			_id: req.params.id
 		})
 		.then(note => {
-
-			res.render('notes/edit', {
-				note
-			});
+			if (note.user !== req.user.id){
+				req.flash('error_msg', 'You don\'t have access to this note or that note does not exist');
+				res.redirect('/notes');
+			} else {
+				res.render('notes/edit', {
+					note
+				});
+			}
 
 		})
-		.catch(err => console.log(err));
+		.catch(err => {
+			req.flash('error_msg', 'You don\'t have access to this note or that note does not exist');
+			res.redirect('/notes');
+		});
 });
 
 //notes route
 router.get('/', (req, res) => {
-	Notes.find({})
+	Notes.find({user: req.user.id})
 		.sort({date: 'desc'})
 		.then(notes => {
 			res.render('notes/index', {
@@ -60,7 +66,8 @@ router.post('/', (req, res) => {
 
 		const newNote = {
 			title: req.body.title,
-			details: req.body.details
+			details: req.body.details,
+			user: req.user.id
 		};
 		const note = new Notes(newNote);
 		note.save()
